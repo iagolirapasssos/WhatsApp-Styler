@@ -36,6 +36,9 @@ const translations = {
         "numberedListTitle": "Lista Numerada",
         "undoTitle": "Desfazer (Ctrl+Z)",
         "redoTitle": "Refazer (Ctrl+Y)",
+        "openTutorial": "Abrir Tutorial",
+        "exportText": "Exportar Texto",
+        "importText": "Importar Texto",
         // Mensagens dinâmicas
         "copySuccess": "Texto copiado para a área de transferência!",
         "backupSuccess": "Backup criado com sucesso!",
@@ -49,7 +52,11 @@ const translations = {
         "autoSaveSaved": "Salvo automaticamente: ",
         "autoSaveError": "Erro ao salvar automaticamente",
         "recentTextLoaded": "Texto recente carregado.",
-        "recentTextDeleted": "Texto recente deletado."
+        "recentTextDeleted": "Texto recente deletado.",
+        "exportSuccess": "Texto exportado com sucesso!",
+        "exportError": "Erro ao exportar texto.",
+        "importSuccess": "Texto importado com sucesso!",
+        "importError": "Erro ao importar texto."
     },
     "en": {
         "title": "WhatsApp Styler",
@@ -85,6 +92,9 @@ const translations = {
         "numberedListTitle": "Numbered List",
         "undoTitle": "Undo (Ctrl+Z)",
         "redoTitle": "Redo (Ctrl+Y)",
+        "openTutorial": "Open Tutorial",
+        "exportText": "Export Text",
+        "importText": "Import Text",
         // Mensagens dinâmicas
         "copySuccess": "Text copied to clipboard!",
         "backupSuccess": "Backup created successfully!",
@@ -98,7 +108,11 @@ const translations = {
         "autoSaveSaved": "Auto-saved: ",
         "autoSaveError": "Error auto-saving",
         "recentTextLoaded": "Recent text loaded.",
-        "recentTextDeleted": "Recent text deleted."
+        "recentTextDeleted": "Recent text deleted.",
+        "exportSuccess": "Text exported successfully!",
+        "exportError": "Error exporting text.",
+        "importSuccess": "Text imported successfully!",
+        "importError": "Error importing text."
     },
     "es": {
         "title": "WhatsApp Styler",
@@ -134,6 +148,9 @@ const translations = {
         "numberedListTitle": "Lista Numerada",
         "undoTitle": "Deshacer (Ctrl+Z)",
         "redoTitle": "Rehacer (Ctrl+Y)",
+        "openTutorial": "Abrir Tutorial",
+        "exportText": "Exportar Texto",
+        "importText": "Importar Texto",
         // Mensagens dinâmicas
         "copySuccess": "¡Texto copiado al portapapeles!",
         "backupSuccess": "¡Respaldo creado con éxito!",
@@ -147,7 +164,11 @@ const translations = {
         "autoSaveSaved": "Guardado automáticamente: ",
         "autoSaveError": "Error al guardar automáticamente",
         "recentTextLoaded": "Texto reciente cargado.",
-        "recentTextDeleted": "Texto reciente eliminado."
+        "recentTextDeleted": "Texto reciente eliminado.",
+        "exportSuccess": "¡Texto exportado con éxito!",
+        "exportError": "Error al exportar texto.",
+        "importSuccess": "¡Texto importado con éxito!",
+        "importError": "Error al importar texto."
     },
     "fr": {
         "title": "WhatsApp Styler",
@@ -183,6 +204,9 @@ const translations = {
         "numberedListTitle": "Liste Numérotée",
         "undoTitle": "Annuler (Ctrl+Z)",
         "redoTitle": "Rétablir (Ctrl+Y)",
+        "openTutorial": "Ouvrir le Tutoriel",
+        "exportText": "Exporter le Texte",
+        "importText": "Importer le Texte",
         // Mensagens dinâmicas
         "copySuccess": "Texte copié dans le presse-papiers !",
         "backupSuccess": "Sauvegarde créée avec succès !",
@@ -196,7 +220,11 @@ const translations = {
         "autoSaveSaved": "Auto-enregistré : ",
         "autoSaveError": "Erreur lors de l'auto-enregistrement",
         "recentTextLoaded": "Texte récent chargé.",
-        "recentTextDeleted": "Texte récent supprimé."
+        "recentTextDeleted": "Texte récent supprimé.",
+        "exportSuccess": "Texte exporté avec succès !",
+        "exportError": "Erreur lors de l'exportation du texte.",
+        "importSuccess": "Texte importé avec succès !",
+        "importError": "Erreur lors de l'importation du texte."
     }
 };
 
@@ -289,10 +317,38 @@ function applyFormatting(symbol) {
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const selectedText = textarea.value.substring(start, end);
-    const newText = symbol + selectedText + symbol;
+    let newText;
+
+    switch(symbol) {
+        case '*':
+            newText = `*${selectedText}*`;
+            break;
+        case '_':
+            newText = `_${selectedText}_`;
+            break;
+        case '~':
+            newText = `~${selectedText}~`;
+            break;
+        case '```':
+            newText = `\`\`\`${selectedText}\`\`\``;
+            break;
+        default:
+            newText = selectedText;
+    }
+
     textarea.setRangeText(newText, start, end, 'end');
     updateOutput();
     updateCharCount();
+    provideFormattingFeedback(symbol);
+}
+
+// Função para fornecer feedback visual ao aplicar formatação
+function provideFormattingFeedback(symbol) {
+    const textarea = document.getElementById('textInput');
+    textarea.classList.add('flash');
+    setTimeout(() => {
+        textarea.classList.remove('flash');
+    }, 300);
 }
 
 // Função para adicionar marcador de lista
@@ -306,6 +362,7 @@ function addListMarker() {
     textarea.setRangeText(newText, start, end, 'end');
     updateOutput();
     updateCharCount();
+    provideFormattingFeedback('list');
 }
 
 // Função para adicionar lista numerada
@@ -320,20 +377,27 @@ function addNumberedList() {
     textarea.setRangeText(numberedText, start, end, 'end');
     updateOutput();
     updateCharCount();
+    provideFormattingFeedback('numberedList');
 }
 
 // Função para atualizar a pré-visualização
 function updateOutput() {
     const text = document.getElementById('textInput').value;
-    const formattedText = text
+    let formattedText = text
         .replace(/\*(.*?)\*/g, '<b>$1</b>')
         .replace(/_(.*?)_/g, '<i>$1</i>')
         .replace(/~(.*?)~/g, '<s>$1</s>')
         .replace(/```(.*?)```/g, '<pre>$1</pre>')
         .replace(/• (.*?)$/gm, '<li>$1</li>')
         .replace(/(\d+)\. (.*?)$/gm, '<li>$1. $2</li>');
-    
-    document.getElementById('output').innerHTML = "<ul>" + formattedText + "</ul>";
+
+    // Adicionar estilos para listas
+    formattedText = formattedText.replace(/<\/li>/g, '</li>');
+    if (/<\/li>/.test(formattedText)) {
+        formattedText = `<ul>${formattedText}</ul>`;
+    }
+
+    document.getElementById('output').innerHTML = formattedText;
 }
 
 // Função para copiar o texto formatado
@@ -599,6 +663,11 @@ function closeTutorial() {
     localStorage.setItem('tutorialSeen', 'true');
 }
 
+// Função para abrir o tutorial
+function openTutorial() {
+    document.getElementById('tutorial').style.display = 'flex';
+}
+
 // Função para inicializar o aplicativo
 function initApp() {
     loadBackup();
@@ -631,22 +700,82 @@ function initTranslations() {
     applyTranslations(lang);
 }
 
-// Adicionar eventos aos botões
-document.getElementById('boldBtn').addEventListener('click', () => applyFormatting('*'));
-document.getElementById('italicBtn').addEventListener('click', () => applyFormatting('_'));
-document.getElementById('strikeBtn').addEventListener('click', () => applyFormatting('~'));
-document.getElementById('monoBtn').addEventListener('click', () => applyFormatting('```'));
-document.getElementById('listBtn').addEventListener('click', addListMarker);
-document.getElementById('numberedListBtn').addEventListener('click', addNumberedList);
-document.getElementById('copyBtn').addEventListener('click', copyFormattedText);
-document.getElementById('backupBtn').addEventListener('click', createBackup);
-document.getElementById('clearBtn').addEventListener('click', clearBackupAndCache);
-document.getElementById('newTextBtn').addEventListener('click', createNewText);
-document.getElementById('darkModeBtn').addEventListener('click', toggleDarkMode);
-document.getElementById('undoBtn').addEventListener('click', undo);
-document.getElementById('redoBtn').addEventListener('click', redo);
-document.getElementById('textInput').addEventListener('input', handleTextInputChange);
-document.getElementById('closeTutorial').addEventListener('click', closeTutorial);
+// Função para exportar o texto formatado
+function exportText() {
+    const text = document.getElementById('textInput').value;
+    const lang = loadLanguage();
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'whatsapp_styler_export.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showAlert('exportSuccess', lang);
+}
+
+// Função para importar o texto formatado
+function importText(event) {
+    const file = event.target.files[0];
+    const lang = loadLanguage();
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const importedText = e.target.result;
+            document.getElementById('textInput').value = importedText;
+            updateOutput();
+            updateCharCount();
+            addToRecentTexts(importedText);
+            showAlert('importSuccess', lang);
+        };
+        reader.onerror = function() {
+            showAlert('importError', lang);
+        };
+        reader.readAsText(file);
+    }
+}
+
+// Função para inicializar eventos adicionais
+function initAdditionalEvents() {
+    // Botão de Tutorial
+    document.getElementById('tutorialBtn').addEventListener('click', openTutorial);
+    
+    // Botão de Exportar Texto
+    document.getElementById('exportBtn').addEventListener('click', exportText);
+    
+    // Botão de Importar Texto
+    document.getElementById('importBtn').addEventListener('click', () => {
+        document.getElementById('importFileInput').click();
+    });
+    
+    // Input de Importação de Arquivo
+    document.getElementById('importFileInput').addEventListener('change', importText);
+}
+
+// Função para inicializar todos os eventos
+function initAllEvents() {
+    // Eventos dos botões existentes
+    document.getElementById('boldBtn').addEventListener('click', () => applyFormatting('*'));
+    document.getElementById('italicBtn').addEventListener('click', () => applyFormatting('_'));
+    document.getElementById('strikeBtn').addEventListener('click', () => applyFormatting('~'));
+    document.getElementById('monoBtn').addEventListener('click', () => applyFormatting('```'));
+    document.getElementById('listBtn').addEventListener('click', addListMarker);
+    document.getElementById('numberedListBtn').addEventListener('click', addNumberedList);
+    document.getElementById('copyBtn').addEventListener('click', copyFormattedText);
+    document.getElementById('backupBtn').addEventListener('click', createBackup);
+    document.getElementById('clearBtn').addEventListener('click', clearBackupAndCache);
+    document.getElementById('newTextBtn').addEventListener('click', createNewText);
+    document.getElementById('darkModeBtn').addEventListener('click', toggleDarkMode);
+    document.getElementById('undoBtn').addEventListener('click', undo);
+    document.getElementById('redoBtn').addEventListener('click', redo);
+    document.getElementById('textInput').addEventListener('input', handleTextInputChange);
+    document.getElementById('closeTutorial').addEventListener('click', closeTutorial);
+    
+    // Eventos adicionais
+    initAdditionalEvents();
+}
 
 // Atalhos de teclado
 document.addEventListener('keydown', function(event) {
@@ -685,4 +814,5 @@ document.addEventListener('keydown', function(event) {
 window.addEventListener('load', () => {
     initTranslations();
     initApp();
+    initAllEvents();
 });

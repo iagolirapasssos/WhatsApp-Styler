@@ -57,8 +57,11 @@
         <div class="control-buttons">
             <button id="backupBtn" class="control-btn" data-i18n="createBackup">Criar Backup</button>
             <button id="newTextBtn" class="control-btn" data-i18n="newText">Novo Texto</button>
+            <button id="tutorialBtn" class="control-btn" data-i18n="openTutorial">Tutorial</button>
             <button id="clearBtn" class="control-btn" data-i18n="clearAll">Limpar Tudo</button>
             <button id="darkModeBtn" class="control-btn" data-i18n="toggleDarkMode">Modo Escuro</button>
+            <button id="exportBtn" class="control-btn" data-i18n="exportText">Exportar Texto</button>
+            <button id="importBtn" class="control-btn" data-i18n="importText">Importar Texto</button>
         </div>
         
         <!-- Informações de Backup e Auto-Save -->
@@ -86,6 +89,9 @@
             <button id="closeTutorial" class="control-btn" data-i18n="understood">Entendi!</button>
         </div>
     </div>
+    
+    <!-- Input para Importar Texto (Hidden) -->
+    <input type="file" id="importFileInput" accept=".txt" style="display: none;">
     
     <script src="script.js"></script>
 </body>
